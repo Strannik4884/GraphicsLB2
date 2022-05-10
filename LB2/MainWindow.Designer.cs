@@ -356,6 +356,7 @@
             // 
             // MainWindow
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(684, 521);
@@ -379,6 +380,8 @@
             this.Name = "MainWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Лабораторная работа №2";
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragEnter);
             ((System.ComponentModel.ISupportInitialize)(this.resultImageBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lowerTresholdValue)).EndInit();
             this.splitContainer.Panel1.ResumeLayout(false);

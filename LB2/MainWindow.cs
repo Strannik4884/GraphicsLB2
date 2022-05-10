@@ -134,6 +134,48 @@ namespace LB2
             }
         }
 
+        // обработчик события перетаскивания файла на форму
+        private void MainWindow_DragDrop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    // проверяем расширение файла
+                    if (!IsCorrectImageExtension(files[0]))
+                    {
+                        throw new InvalidDataException("Неверный формат файла");
+                    }
+
+                    resultImageBox.Image = null;
+                    originalImageBox.Image = null;
+
+                    if (imageHandler.CurrentBitmap != null) imageHandler.CurrentBitmap.Dispose();
+                    if (imageHandler.OriginalBitmap != null) imageHandler.OriginalBitmap.Dispose();
+
+                    imageHandler.CurrentBitmap = (Bitmap)Image.FromFile(files[0]);
+                    imageHandler.OriginalBitmap = (Bitmap)Image.FromFile(files[0]);
+                    imageHandler.BitmapPath = files[0];
+
+                    originalImageBox.Image = imageHandler.OriginalBitmap;
+
+                    imageResolutionBox.Text = originalImageBox.Image.Width.ToString() + "x" + originalImageBox.Image.Height.ToString();
+                    imageSizeBox.Text = Math.Round((new FileInfo(files[0]).Length / 1000000.0), 2).ToString() + " МБ";
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка при открытии изображения: неверный формат файла", "Ошибка файла", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // обработчик события перетаскивания файла на форму (обновление курсора)
+        private void MainWindow_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
+        }
+
         // обработчик пункта меню сохранения изображения
         private void saveFileAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -222,6 +264,18 @@ namespace LB2
                 default:
                     return ImageFormat.Png;
             }
+        }
+
+        // функция для проверки расширения файла изображения
+        private bool IsCorrectImageExtension(string path)
+        {
+            string extension = Path.GetExtension(path).ToLower();
+            if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp")
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
