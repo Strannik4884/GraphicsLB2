@@ -83,13 +83,24 @@ namespace LB2
             if (imageHandler.CurrentBitmap != null) imageHandler.CurrentBitmap.Dispose();
             if (imageHandler.OriginalBitmap != null) imageHandler.OriginalBitmap.Dispose();
 
+            maxPrecisionFlag.Checked = false;
+            detector.IsMaxPrecision = false;
+
+            precisionValue.Enabled = true;
+            precisionValue.Value = 50;
+            precisionValue_Scroll(null, null);
+
+            calculateTresholdsFlag.Checked = false;
+            detector.IsMaxPrecision = false;
+
             lowerTresholdValue.Value = 2;
             upperTresholdValue.Value = 8;
-            lowerTresholdBox.Text = defaultLowerTreshold.ToString();
-            upperTresholdBox.Text = defaultUpperTreshold.ToString();
-            detector.LowerTreshold = defaultLowerTreshold;
-            detector.UpperTreshold = defaultUpperTreshold;
-            detector.IsMaxPrecision = false;
+            lowerTresholdValue_Scroll(null, null);
+            upperTresholdValue_Scroll(null, null);
+            
+            imageResolutionBox.Text = "0x0";
+            imageSizeBox.Text = "0 МБ";
+            lastDetectionTimeBox.Text = "0";
         }
 
         // обработчик пункта меню загрузки изображения
@@ -115,7 +126,7 @@ namespace LB2
                 originalImageBox.Image = imageHandler.OriginalBitmap;
 
                 imageResolutionBox.Text = originalImageBox.Image.Width.ToString() + "x" + originalImageBox.Image.Height.ToString();
-                imageSizeBox.Text = Math.Round((new FileInfo(openFileDialog.FileName).Length / 1000000.0), 2).ToString() + "MB";
+                imageSizeBox.Text = Math.Round((new FileInfo(openFileDialog.FileName).Length / 1000000.0), 2).ToString() + " МБ";
             }
             catch (Exception)
             {
