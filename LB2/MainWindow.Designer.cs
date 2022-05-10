@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.resultImageBox = new System.Windows.Forms.PictureBox();
-            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.lowerTresholdValue = new System.Windows.Forms.TrackBar();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
             this.originalImageBox = new System.Windows.Forms.PictureBox();
@@ -85,10 +84,6 @@
             this.resultImageBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.resultImageBox.TabIndex = 0;
             this.resultImageBox.TabStop = false;
-            // 
-            // openFileDialog
-            // 
-            this.openFileDialog.FileName = "openFileDialog";
             // 
             // lowerTresholdValue
             // 
@@ -269,7 +264,7 @@
             // spring
             // 
             this.spring.Name = "spring";
-            this.spring.Size = new System.Drawing.Size(310, 17);
+            this.spring.Size = new System.Drawing.Size(341, 17);
             this.spring.Spring = true;
             // 
             // lastDetectionTimeLabel
@@ -296,6 +291,7 @@
             // 
             // menuStrip
             // 
+            this.menuStrip.BackColor = System.Drawing.SystemColors.Control;
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.detectToolStripMenuItem});
@@ -303,7 +299,7 @@
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(684, 24);
             this.menuStrip.TabIndex = 16;
-            this.menuStrip.Text = "menuStrip1";
+            this.menuStrip.Text = "menuStrip";
             // 
             // fileToolStripMenuItem
             // 
@@ -319,6 +315,7 @@
             // 
             // clearToolStripMenuItem
             // 
+            this.clearToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
             this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
             this.clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.clearToolStripMenuItem.Text = "Очистить";
@@ -403,7 +400,6 @@
         #endregion
 
         private System.Windows.Forms.PictureBox resultImageBox;
-        private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.TrackBar lowerTresholdValue;
         private System.Windows.Forms.SplitContainer splitContainer;
         private System.Windows.Forms.TrackBar upperTresholdValue;
