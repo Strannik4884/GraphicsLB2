@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 
@@ -8,23 +9,21 @@ namespace LB2
 {
     public partial class MainWindow : Form
     {
-        readonly ImageHandler imageHandler = new ImageHandler();
-        readonly Detector detector = new Detector();
+        private readonly ImageHandler imageHandler = new ImageHandler();
+        private readonly Detector detector = new Detector();
+        private readonly double defaultLowerTreshold = 0.02;
+        private readonly double defaultUpperTreshold = 0.08;
 
         public MainWindow()
         {
             InitializeComponent();
-            openFileDialog = new OpenFileDialog { RestoreDirectory = true, FilterIndex = 1 };
-            //openFileDialog.Filter = "jpg Files (*.jpg)|*.jpg|gif Files (*.gif)|*.gif|png Files (*.png)|*.png |bmp Files (*.bmp)|*.bmp";
             // инициализация параметров
-            double lowerTreshold = 0.02;
-            double upperTreshold = 0.08;
             lowerTresholdValue.Value = 2;
             upperTresholdValue.Value = 8;
-            lowerTresholdBox.Text = lowerTreshold.ToString();
-            upperTresholdBox.Text = upperTreshold.ToString();
-            detector.LowerTreshold = lowerTreshold;
-            detector.UpperTreshold = upperTreshold;
+            lowerTresholdBox.Text = defaultLowerTreshold.ToString();
+            upperTresholdBox.Text = defaultUpperTreshold.ToString();
+            detector.LowerTreshold = defaultLowerTreshold;
+            detector.UpperTreshold = defaultUpperTreshold;
             detector.IsMaxPrecision = false;
         }
 
@@ -78,39 +77,78 @@ namespace LB2
         // обработчик пункта меню очистки формы
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-        }
-
-        // обработчик пункта меню загрузки изображения
-        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (DialogResult.OK != openFileDialog.ShowDialog()) return;
             resultImageBox.Image = null;
             originalImageBox.Image = null;
 
             if (imageHandler.CurrentBitmap != null) imageHandler.CurrentBitmap.Dispose();
             if (imageHandler.OriginalBitmap != null) imageHandler.OriginalBitmap.Dispose();
 
-            imageHandler.CurrentBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
-            imageHandler.OriginalBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
-            imageHandler.BitmapPath = openFileDialog.FileName;
+            lowerTresholdValue.Value = 2;
+            upperTresholdValue.Value = 8;
+            lowerTresholdBox.Text = defaultLowerTreshold.ToString();
+            upperTresholdBox.Text = defaultUpperTreshold.ToString();
+            detector.LowerTreshold = defaultLowerTreshold;
+            detector.UpperTreshold = defaultUpperTreshold;
+            detector.IsMaxPrecision = false;
+        }
 
-            originalImageBox.Image = imageHandler.OriginalBitmap;
+        // обработчик пункта меню загрузки изображения
+        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Image files (*.png;*.jpeg;*.jpg;*.bmp)|*.png;*.jpeg;*.jpg;*.bmp"
+                };
+                if (DialogResult.OK != openFileDialog.ShowDialog()) return;
+                resultImageBox.Image = null;
+                originalImageBox.Image = null;
 
-            imageResolutionBox.Text = originalImageBox.Image.Width.ToString() + "x" + originalImageBox.Image.Height.ToString();
-            imageSizeBox.Text = Math.Round((new FileInfo(openFileDialog.FileName).Length / 1000000.0), 2).ToString() + "MB";
+                if (imageHandler.CurrentBitmap != null) imageHandler.CurrentBitmap.Dispose();
+                if (imageHandler.OriginalBitmap != null) imageHandler.OriginalBitmap.Dispose();
+
+                imageHandler.CurrentBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
+                imageHandler.OriginalBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
+                imageHandler.BitmapPath = openFileDialog.FileName;
+
+                originalImageBox.Image = imageHandler.OriginalBitmap;
+
+                imageResolutionBox.Text = originalImageBox.Image.Width.ToString() + "x" + originalImageBox.Image.Height.ToString();
+                imageSizeBox.Text = Math.Round((new FileInfo(openFileDialog.FileName).Length / 1000000.0), 2).ToString() + "MB";
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка при открытии изображения: неверный формат файла", "Ошибка файла", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // обработчик пункта меню сохранения изображения
         private void saveFileAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            try
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "PNG (*.png)|*.png|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg|BMP (*.bmp)|*.bmp"
+                };
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // получаем Bitmap полученного изображения
+                    Bitmap bmp = imageHandler.CurrentBitmap;
+                    bmp.Save(saveFileDialog.FileName, GetImageFormatByFilterIndex(saveFileDialog.FilterIndex));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при сохранении изображения: " + ex.Message, "Ошибка файла", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // обработчик пункта меню выхода из приложения
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            Close();
         }
 
         // обработчик пункта меню определения границ
@@ -153,10 +191,26 @@ namespace LB2
                 imageHandler.CleanUp();
                 detector.CleanUp();
                 lastDetectionTimeBox.Text = "0";
-                MessageBox.Show("Выбранное изображение слишком велико. Выберите изображение меньшего размера и повторите попытку");
+                MessageBox.Show("Выбранное изображение слишком велико. Выберите изображение меньшего размера и повторите попытку", "Ошибка поиска границ", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             Cursor = Cursors.Default;
+        }
+
+        // функция для получения формата изображения по выбранному индексу фильтра
+        private ImageFormat GetImageFormatByFilterIndex(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    return ImageFormat.Png;
+                case 1:
+                    return ImageFormat.Jpeg;
+                case 2:
+                    return ImageFormat.Bmp;
+                default:
+                    return ImageFormat.Png;
+            }
         }
     }
 }
